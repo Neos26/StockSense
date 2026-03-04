@@ -1,0 +1,149 @@
+﻿@page "/admin/appointments"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+@using StockSense.shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<div style="padding: 20px; color: white; background: #111; min-height: 100vh;">
+    <h2 style="margin-bottom: 20px;">Manage Appointments</h2>
+
+    @* --- THE TAB BUTTONS --- *@
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 15px;">
+        <button @onclick='() => currentTab = "Active"' style="@GetTabStyle("Active")">
+            Active (Pending / Confirmed)
+        </button>
+        <button @onclick='() => currentTab = "Completed"' style="@GetTabStyle("Completed")">
+            Completed
+        </button>
+        <button @onclick='() => currentTab = "Cancelled"' style="@GetTabStyle("Cancelled")">
+            Cancelled
+        </button>
+    </div>
+
+    @if (allAppointments == null)
+    {
+        <p style="color: gray;">Loading database records...</p>
+    }
+    else if (!FilteredAppointments.Any())
+    {
+        <div style="padding: 30px; background: #222; border-radius: 8px; text-align: center;">
+            <p style="color: gray; font-size: 1.2em;">No @currentTab.ToLower() appointments found.</p>
+        </div>
+    }
+    else
+    {
+        <table style="width: 100%; text-align: left; border-collapse: collapse; background: #222; border-radius: 8px; overflow: hidden;">
+            <thead style="background: #333;">
+                <tr>
+                    <th style="padding: 15px;">Customer</th>
+                    <th style="padding: 15px;">Date & Time</th>
+                    <th style="padding: 15px;">Services</th>
+                    <th style="padding: 15px;">Total</th>
+                    <th style="padding: 15px;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var appt in FilteredAppointments)
+                {
+                    <tr @key="appt.Id" style="border-bottom: 1px solid #444;">
+                        <td style="padding: 15px; font-weight: bold;">@appt.CustomerName</td>
+                        <td style="padding: 15px;">@appt.AppointmentDate.ToShortDateString() <br /> <span style="color: #2196F3;">@appt.TimeSlot</span></td>
+                        <td style="padding: 15px; color: #ccc;">@appt.ServicesRequested</td>
+                        <td style="padding: 15px; font-weight: bold; color: #4CAF50;">P @appt.TotalAmount</td>
+                        <td style="padding: 15px;">
+                            @* The Dropdown automatically saves and triggers the row to move tabs! *@
+                            <select value="@appt.Status"
+                                    @onchange="@(e => UpdateStatus(appt, e.Value?.ToString() ?? "Pending"))"
+                                    style="padding: 8px; background: #111; color: white; border: 1px solid @GetStatusColor(appt.Status); border-radius: 4px; cursor: pointer; outline: none;">
+                                <option value="Pending">Pending</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    // 1. We store ALL appointments from the database here
+    private List<Appointment>? allAppointments;
+
+    // 2. This tracks which tab the admin is currently looking at
+    private string currentTab = "Active";
+
+    // 3. This dynamically filters the list based on the active tab
+    private IEnumerable<Appointment> FilteredAppointments =>
+        currentTab switch
+        {
+            "Active" => allAppointments?.Where(a => a.Status == "Pending" || a.Status == "Confirmed") ?? Array.Empty<Appointment>(),
+            "Completed" => allAppointments?.Where(a => a.Status == "Completed") ?? Array.Empty<Appointment>(),
+            "Cancelled" => allAppointments?.Where(a => a.Status == "Cancelled") ?? Array.Empty<Appointment>(),
+            _ => Array.Empty<Appointment>()
+        };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAppointments();
+    }
+
+    private async Task LoadAppointments()
+    {
+        try
+        {
+            // Fetch everything once when the page loads
+            allAppointments = await Http.GetFromJsonAsync<List<Appointment>>("api/appointments/all");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to load appointments: {ex.Message}");
+        }
+    }
+
+    private async Task UpdateStatus(Appointment appt, string newStatus)
+    {
+        try
+        {
+            var response = await Http.PutAsJsonAsync($"api/appointments/{appt.Id}/status", newStatus);
+
+            if (response.IsSuccessStatusCode)
+            {
+                appt.Status = newStatus;
+
+                // THE FIX: Force Blazor to instantly redraw the UI
+                StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("Server failed to update status.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating status: {ex.Message}");
+        }
+    }
+
+    // --- UI Helper Methods ---
+
+    // Changes the button style depending on if it is selected
+    private string GetTabStyle(string tabName) =>
+        currentTab == tabName
+            ? "padding: 10px 20px; background: white; color: black; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;"
+            : "padding: 10px 20px; background: #333; color: #aaa; border: none; border-radius: 5px; cursor: pointer;";
+
+    // Colors the border of the dropdown so the admin can quickly scan the table
+    private string GetStatusColor(string status) =>
+        status switch
+        {
+            "Pending" => "#ffc107",   // Yellow
+            "Confirmed" => "#2196F3", // Blue
+            "Completed" => "#4CAF50", // Green
+            "Cancelled" => "#f44336", // Red
+            _ => "#555"
+        };
+}

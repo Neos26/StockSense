@@ -1,0 +1,98 @@
+﻿@page "/my-bookings"
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+@using StockSense.shared
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<div style="padding: 20px; color: white; background: #111; min-height: 100vh;">
+    <h2 style="margin-bottom: 20px;">My Appointment History</h2>
+
+    @if (isLoading)
+    {
+        <p style="color: gray;">Loading your records...</p>
+    }
+    else if (myAppointments == null || !myAppointments.Any())
+    {
+        <div style="padding: 20px; background: #222; border-radius: 8px; text-align: center;">
+            <p style="color: gray;">You have no booking history yet.</p>
+            <a href="/book" style="color: #2196F3; text-decoration: none; font-weight: bold;">Book your first appointment</a>
+        </div>
+    }
+    else
+    {
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            @foreach (var appt in myAppointments)
+            {
+                <div style="background: #222; padding: 20px; border-radius: 8px; border-left: 5px solid @GetStatusColor(appt.Status);">
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3 style="margin: 0;">@appt.AppointmentDate.ToShortDateString() at @appt.TimeSlot</h3>
+
+                        <span style="padding: 5px 12px; font-weight: bold; background: #111; border-radius: 20px; color: @GetStatusColor(appt.Status);">
+                            @appt.Status
+                        </span>
+                    </div>
+
+                    <p style="margin: 5px 0; color: #aaa;"><strong>Services:</strong> @appt.ServicesRequested</p>
+                    <p style="margin: 5px 0; color: white; font-size: 1.1em;"><strong>Total:</strong> P @appt.TotalAmount</p>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthStateTask { get; set; }
+
+    private List<Appointment>? myAppointments;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthStateTask != null)
+        {
+            var authState = await AuthStateTask;
+            var user = authState.User;
+
+            if (user.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                // 1. Figure out the user's Full Name (matching the logic from your Booking page)
+                string customerName = user.Identity.Name ?? "Account User";
+                try
+                {
+                    var profile = await Http.GetFromJsonAsync<UserProfile>("api/user/profile");
+                    if (profile != null)
+                    {
+                        customerName = $"{profile.FirstName ?? ""} {profile.LastName ?? ""}".Trim();
+                    }
+                }
+                catch { /* Silent fallback to username */ }
+
+                // 2. Fetch ONLY their bookings from the server
+                try
+                {
+                    myAppointments = await Http.GetFromJsonAsync<List<Appointment>>($"api/appointments/my-bookings?name={Uri.EscapeDataString(customerName)}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error fetching bookings: {ex.Message}");
+                }
+            }
+        }
+        isLoading = false;
+    }
+
+    // A helper function to color-code the badges!
+    private string GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Pending" => "#ffc107",   // Yellow
+            "Confirmed" => "#2196F3", // Blue
+            "Completed" => "#4CAF50", // Green
+            "Cancelled" => "#f44336", // Red
+            _ => "#ffffff"            // White default
+        };
+    }
+}

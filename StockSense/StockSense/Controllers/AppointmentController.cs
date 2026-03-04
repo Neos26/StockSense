@@ -35,6 +35,46 @@ public class AppointmentsController : ControllerBase
 
         return Ok(bookedSlots);
     }
+
+    // 1. Get ALL appointments for the Admin table
+    [HttpGet("all")]
+    public async Task<ActionResult<List<Appointment>>> GetAllAppointments()
+    {
+        // Fetches all appointments and sorts them by Date, then by Time
+        var appointments = await _db.Appointments
+            .OrderByDescending(a => a.AppointmentDate)
+            .ThenBy(a => a.TimeSlot)
+            .ToListAsync();
+
+        return Ok(appointments);
+    }
+
+    // 2. Update the status of a specific appointment
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] string newStatus)
+    {
+        var appointment = await _db.Appointments.FindAsync(id);
+        if (appointment == null) return NotFound();
+
+        appointment.Status = newStatus;
+        await _db.SaveChangesAsync();
+
+        return Ok();
+    }
+
+
+    [HttpGet("my-bookings")]
+    public async Task<ActionResult<List<Appointment>>> GetMyBookings([FromQuery] string name)
+    {
+        // Search the database for appointments matching THIS specific customer
+        var myBookings = await _db.Appointments
+            .Where(a => a.CustomerName == name)
+            .OrderByDescending(a => a.AppointmentDate)
+            .ThenBy(a => a.TimeSlot)
+            .ToListAsync();
+
+        return Ok(myBookings);
+    }
 }
 
 

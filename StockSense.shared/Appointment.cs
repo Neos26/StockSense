@@ -17,4 +17,6 @@ public class Appointment
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal TotalAmount { get; set; } // Stores the calculated P900
+
+    public string Status { get; set; } = "Pending";
 }
