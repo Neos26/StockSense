@@ -40,6 +40,8 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddTransient<IEmailSender<ApplicationUser>, EmailSender>();
 builder.Services.AddTransient<EmailSender>();
 builder.Services.AddControllers();
+builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, StockSense.Utility.Security.BCryptPasswordHasher>();
+builder.Services.AddAntiforgery();
 
 var app = builder.Build();
 
@@ -61,6 +63,13 @@ else
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+
+app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()

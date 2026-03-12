@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\StockSense.shared\StockSense.shared.csproj" />
     <ProjectReference Include="..\StockSense.Client\StockSense.Client.csproj" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="MailKit" Version="4.15.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.23" />

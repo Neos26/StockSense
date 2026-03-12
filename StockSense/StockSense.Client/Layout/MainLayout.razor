@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -6,9 +8,7 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+
 
         <article class="content px-4">
             @Body
@@ -21,3 +21,27 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+    // Check if the current URL contains "Account/Manage"
+    private bool IsAccountManagePage =>
+        NavigationManager.ToBaseRelativePath(NavigationManager.Uri).StartsWith("Account/Manage", StringComparison.OrdinalIgnoreCase);
+
+    protected override void OnInitialized()
+    {
+        // Tell the layout to listen for URL changes so it can hide/show the bar dynamically
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        // Re-evaluate the page and update the layout
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        // Clean up the listener to prevent memory leaks
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
