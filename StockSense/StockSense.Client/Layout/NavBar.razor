@@ -1,0 +1,132 @@
+@implements IDisposable
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@rendermode InteractiveWebAssembly
+
+<style>
+    .navbar-btn:hover {
+        background-color: var(--accent) !important;
+        color: var(--accent-foreground) !important;
+    }
+</style>
+
+<header style="position: sticky; top: 0; z-index: 50; width: 100%; border-bottom: 1px solid var(--border); background-color: var(--background); backdrop-filter: blur(8px);">
+    <div style="display: flex; height: 3.5rem; max-width: 1280px; margin: 0 auto; align-items: center; justify-content: space-between; padding: 0 1rem;">
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <a href="/" style="text-decoration: none; padding: 0.25rem 0.5rem; border-radius: var(--radius);">
+                <div style="display: flex; flex-direction: column; line-height: 0.9;">
+                    <span style="color: var(--primary); font-weight: 800; font-style: italic; font-size: 1.125rem; letter-spacing: 0.05em; font-family: var(--font-sans);">SAP</span>
+                    <span style="color: var(--primary); font-weight: 800; font-style: italic; font-size: 1.125rem; letter-spacing: 0.05em; font-family: var(--font-sans);">SHOP</span>
+                </div>
+            </a>
+
+            <nav style="display: flex; align-items: center; gap: 0.25rem;">
+                <a href="/" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: @(IsActive("/") ? "var(--secondary)" : "transparent"); text-decoration: none;">
+                    Home
+                </a>
+                <a href="/appointment" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: @(IsActive("/appointment") ? "var(--secondary)" : "transparent"); text-decoration: none;">
+                    Appointment
+                </a>
+                <a href="/build" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: @(IsActive("/build") ? "var(--secondary)" : "transparent"); text-decoration: none;">
+                    Build
+                </a>
+            </nav>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <AuthorizeView>
+                <Authorized>
+                    <a href="/Account/Manage" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: @(IsActive("/Account/Manage") ? "var(--secondary)" : "transparent"); text-decoration: none;">
+                        Profile
+                    </a>
+                    <form action="Account/Logout" method="post" style="margin: 0; display: inline-flex;">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                        <button type="submit" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: transparent; border: none;">
+                            Logout
+                        </button>
+                    </form>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="/Account/Login" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; font-family: var(--font-sans); transition: all 0.2s ease; cursor: pointer; padding: 0.5rem 0.75rem; color: var(--foreground); background-color: transparent; text-decoration: none;">
+                        Login
+                    </a>
+                </NotAuthorized>
+            </AuthorizeView>
+
+            <button type="button" @onclick="ToggleTheme" class="navbar-btn" style="display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.2s ease; cursor: pointer; height: 2.25rem; width: 2.25rem; padding: 0; color: var(--foreground); background-color: transparent; border: none;">
+                @if (isDarkMode)
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 2v2"></path>
+                        <path d="M12 20v2"></path>
+                        <path d="m4.93 4.93 1.41 1.41"></path>
+                        <path d="m17.66 17.66 1.41 1.41"></path>
+                        <path d="M2 12h2"></path>
+                        <path d="M20 12h2"></path>
+                        <path d="m6.34 17.66-1.41 1.41"></path>
+                        <path d="m19.07 4.93-1.41 1.41"></path>
+                    </svg>
+                }
+                else
+                {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                    </svg>
+                }
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    private string? currentUrl;
+    private bool isDarkMode = false;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var theme = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "theme");
+                isDarkMode = theme == "dark";
+            }
+            catch { }
+
+            StateHasChanged();
+        }
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        await JSRuntime.InvokeVoidAsync("window.setTheme", isDarkMode);
+    }
+
+    private bool IsActive(string path)
+    {
+        var currentPath = "/" + (currentUrl ?? "");
+        if (path == "/" && currentPath == "/") return true;
+        if (path != "/" && currentPath.StartsWith(path, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}

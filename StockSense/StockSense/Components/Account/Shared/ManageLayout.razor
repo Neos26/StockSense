@@ -1,43 +1,20 @@
 ﻿@inherits LayoutComponentBase
 @using StockSense.Client.Layout
 
-<AuthorizeView Roles="admin">
-    <Authorized>
-        @* ---- ADMINS: Get the MainLayout AND the Inner Account Sidebar ---- *@
-        <LayoutView Layout="@typeof(MainLayout)">
-            <div class="container pt-4">
-                <h2>Manage your account</h2>
-                <hr />
-                <div class="row">
-                    @* The inner sidebar for admins *@
-                    <div class="col-md-3">
-                        <ManageNavMenu />
-                    </div>
-                    @* The profile form *@
-                    <div class="col-md-9">
-                        @Body
-                    </div>
-                </div>
+<div style="display: flex; flex-direction: column; height: 100vh; background-color: var(--background); font-family: var(--font-sans);">
+    <NavBar />
+    <div style="display: flex; flex: 1; overflow: hidden;">
+
+        <aside style="width: 14rem; flex-shrink: 0; border-right: 1px solid var(--border); background-color: var(--card); padding: var(--space-6) var(--space-4); overflow-y: auto;">
+            <p style="font-size: var(--text-xs); font-weight: var(--font-semibold); color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.08em; margin: 0 0 var(--space-3) var(--space-3);">Account</p>
+            <ManageNavMenu />
+        </aside>
+
+        <main style="flex: 1; overflow-y: auto; padding: var(--space-8);">
+            <div style="max-width: 640px;">
+                @Body
             </div>
-        </LayoutView>
-    </Authorized>
-    <NotAuthorized>
-        @* ---- REGULAR USERS: Get the EmptyLayout AND the Inner Account Sidebar ---- *@
-        <LayoutView Layout="@typeof(EmptyLayout)">
-            <div class="container pt-4">
-                <h2>My Profile</h2>
-                <hr />
-                <div class="row">
-                    @* Added this back! The inner sidebar for regular users *@
-                    <div class="col-md-3">
-                        <ManageNavMenu />
-                    </div>
-                    @* Shrunk the profile form back to 9 columns to fit the sidebar *@
-                    <div class="col-md-9">
-                        @Body
-                    </div>
-                </div>
-            </div>
-        </LayoutView>
-    </NotAuthorized>
-</AuthorizeView>
+        </main>
+
+    </div>
+</div>

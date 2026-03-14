@@ -9,6 +9,8 @@ using StockSense.Data;
 
 
 #nullable disable
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace StockSense.Migrations
 {
@@ -17,7 +19,7 @@ namespace StockSense.Migrations
     partial class AddAppointmentStatus
     {
         /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected new void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

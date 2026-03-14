@@ -1,31 +1,41 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using StockSense.Data
-
 @inject SignInManager<ApplicationUser> SignInManager
 
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage" Match="NavLinkMatch.All">Profile</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/Email">Email</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/ChangePassword">Password</NavLink>
-    </li>
+<nav style="display: flex; flex-direction: column; gap: var(--space-1);">
+    <NavLink href="Account/Manage" Match="NavLinkMatch.All" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+        Profile
+    </NavLink>
+    <NavLink href="Account/Manage/Email" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+        Email
+    </NavLink>
+    <NavLink href="Account/Manage/ChangePassword" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+        Password
+    </NavLink>
     @if (hasExternalLogins)
     {
-        <li class="nav-item">
-            <NavLink class="nav-link" href="Account/Manage/ExternalLogins">External logins</NavLink>
-        </li>
+        <NavLink href="Account/Manage/ExternalLogins" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+            External Logins
+        </NavLink>
     }
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/TwoFactorAuthentication">Two-factor authentication</NavLink>
-    </li>
-    <li class="nav-item">
-        <NavLink class="nav-link" href="Account/Manage/PersonalData">Personal data</NavLink>
-    </li>
-</ul>
+    <NavLink href="Account/Manage/TwoFactorAuthentication" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+        Two-Factor Auth
+    </NavLink>
+    <NavLink href="Account/Manage/PersonalData" style="display: block; padding: var(--space-2) var(--space-3); border-radius: var(--radius); font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground); text-decoration: none;" ActiveClass="manage-nav-active">
+        Personal Data
+    </NavLink>
+</nav>
+
+<style>
+    .manage-nav-active {
+        background-color: var(--secondary) !important;
+        color: var(--secondary-foreground) !important;
+    }
+    nav a:hover:not(.manage-nav-active) {
+        background-color: var(--accent);
+        color: var(--accent-foreground);
+    }
+</style>
 
 @code {
     private bool hasExternalLogins;
