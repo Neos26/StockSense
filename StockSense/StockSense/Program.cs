@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
+using StockSense.Client.Pages;
 using StockSense.Components;
 using StockSense.Components.Account;
 using StockSense.Data;
+using BlazorBlueprint.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddBlazorBlueprintComponents();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
@@ -42,6 +44,7 @@ builder.Services.AddTransient<EmailSender>();
 builder.Services.AddControllers();
 builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, StockSense.Utility.Security.BCryptPasswordHasher>();
 builder.Services.AddAntiforgery();
+
 
 var app = builder.Build();
 
@@ -80,5 +83,6 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 app.MapControllers();
+
 
 app.Run();
