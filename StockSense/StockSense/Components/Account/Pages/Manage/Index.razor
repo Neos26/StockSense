@@ -33,6 +33,12 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <label style="font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground);">Role</label>
+            <input type="text" value="@userRole" disabled
+                   style="width: 100%; padding: var(--input-padding-y) var(--input-padding-x); border-radius: var(--radius); border: 1px solid var(--input); background-color: var(--muted); color: var(--muted-foreground); font-size: var(--input-font-size); box-sizing: border-box; cursor: not-allowed;" />
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: var(--space-2);">
             <label style="font-size: var(--text-sm); font-weight: var(--font-medium); color: var(--foreground);">Phone number</label>
             <InputText @bind-Value="Input.PhoneNumber"
                        style="width: 100%; padding: var(--input-padding-y) var(--input-padding-x); border-radius: var(--radius); border: 1px solid var(--input); background-color: var(--background); color: var(--foreground); font-size: var(--input-font-size); box-sizing: border-box;" />
@@ -51,6 +57,7 @@
     private ApplicationUser user = default!;
     private string? username;
     private string? phoneNumber;
+    private string? userRole;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -63,6 +70,9 @@
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+
+        var roles = await UserManager.GetRolesAsync(user);
+        userRole = roles.FirstOrDefault() ?? "No role assigned";
 
         Input.PhoneNumber ??= phoneNumber;
     }

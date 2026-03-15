@@ -46,8 +46,27 @@ builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, StockSense.Utility.
 builder.Services.AddAntiforgery();
 
 
-var app = builder.Build();
+var app = builder.Build(); 
 
+ //REMOVE THIS AFTER SEEDING ADMIN TO stocksense.debug@gmail.com
+using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+    // Create Admin role if it doesn't exist
+    if (!await roleManager.RoleExistsAsync("Admin"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Admin"));
+    }
+
+    // Assign Admin to your user
+    var adminUser = await userManager.FindByEmailAsync("stocksense.debug@gmail.com");
+    if (adminUser != null && !await userManager.IsInRoleAsync(adminUser, "Admin"))
+    {
+        await userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+}
 
 
 // Configure the HTTP request pipeline.
